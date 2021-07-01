@@ -33,9 +33,9 @@ After running this:
   -profile-dir 'Profile 1'
 ```
 
-you should see a `burndown.html` file which has two charts:
+you should see a `burndown-chart.html` file which has two charts:
 
-- Burndown Story Points
-- Burndown Issues
+- Story Points
+- Issues
 
 ![image](https://user-images.githubusercontent.com/667169/123982868-f70d7000-d9f5-11eb-9c80-6b7fcc69ef76.png)

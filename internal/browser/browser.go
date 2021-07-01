@@ -12,9 +12,8 @@ import (
 )
 
 const (
-	profileDir = "Profile 1"
-	bin        = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-	queryUrl   = "https://api.zenhub.com/v1/graphql?query=getSprintIssues"
+	bin      = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+	queryUrl = "https://api.zenhub.com/v1/graphql?query=getSprintIssues"
 )
 
 var (

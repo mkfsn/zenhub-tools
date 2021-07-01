@@ -17,8 +17,6 @@ func NewTeamSprint(members []string, sprint Sprint) TeamSprint {
 	userIssues := make(map[string]issues, 0)
 
 	for _, issue := range sprint.SprintIssues.Issues() {
-		allIssues = append(allIssues, issue.Issue)
-
 		if len(issue.Issue.Assignees.Nodes) < 1 {
 			continue
 		}
@@ -29,12 +27,13 @@ func NewTeamSprint(members []string, sprint Sprint) TeamSprint {
 			continue
 		}
 
+		allIssues = append(allIssues, issue.Issue)
 		userIssues[assignee] = append(userIssues[assignee], issue.Issue)
 	}
 
 	return TeamSprint{
-		startTime:  sprint.StartAt,
-		endTime:    sprint.EndAt,
+		startTime:  sprint.StartAt.In(time.Local),
+		endTime:    sprint.EndAt.In(time.Local),
 		allIssues:  allIssues,
 		userIssues: userIssues,
 	}
@@ -66,6 +65,19 @@ func (t TeamSprint) UserBurndownIssues() map[string]issues {
 	return result
 }
 
+func (t TeamSprint) sprintDates() []string {
+	days := int64(t.endTime.Sub(t.startTime).Hours()/24.0) + 1
+
+	result := make([]string, 0, days)
+
+	result = append(result, toDate(t.startTime.Add(-time.Hour*24)))
+	for ts := t.startTime; ts.Before(t.endTime); ts = ts.Add(time.Hour * 24) {
+		result = append(result, toDate(ts))
+	}
+
+	return result
+}
+
 func (t TeamSprint) issueDates() []string {
 	days := int64(t.endTime.Sub(t.startTime).Hours()/24.0) + 1
 
@@ -76,6 +88,32 @@ func (t TeamSprint) issueDates() []string {
 	}
 
 	return result
+}
+
+func (t TeamSprint) totalIssues() int {
+	return len(t.allIssues)
+}
+
+func (t TeamSprint) totalStoryPoints() float64 {
+	var total float64
+
+	for _, issue := range t.allIssues {
+		total += issue.Estimate.Value
+	}
+
+	return total
+}
+
+func (t TeamSprint) workingDays() int {
+	var days int
+
+	for ts := t.startTime; ts.Before(t.endTime); ts = ts.Add(time.Hour * 24) {
+		if ts.Weekday() != time.Sunday && ts.Weekday() != time.Saturday {
+			days++
+		}
+	}
+
+	return days
 }
 
 type issues []Issue
@@ -89,11 +127,11 @@ func (i issues) burndownStoryPoints(startTime, endTime time.Time) []float64 {
 		point := issue.Estimate.Value
 		totalPoint += point
 
-		if issue.ClosedAt.IsZero() {
+		if issue.ClosedAt.In(time.Local).IsZero() {
 			continue
 		}
 
-		burnPointByDate[toDate(issue.ClosedAt)] += point
+		burnPointByDate[toDate(issue.ClosedAt.In(time.Local))] += point
 	}
 
 	days := int64(endTime.Sub(startTime).Hours()/24.0) + 1
@@ -119,11 +157,11 @@ func (i issues) burndownIssues(startTime, endTime time.Time) []int64 {
 	for _, issue := range i {
 		totalIssues += 1
 
-		if issue.ClosedAt.IsZero() {
+		if issue.ClosedAt.In(time.Local).IsZero() {
 			continue
 		}
 
-		burnIssueByDate[toDate(issue.ClosedAt)] += 1
+		burnIssueByDate[toDate(issue.ClosedAt.In(time.Local))] += 1
 	}
 
 	days := int64(endTime.Sub(startTime).Hours()/24.0) + 1
@@ -151,5 +189,5 @@ func isMember(members []string, user string) bool {
 }
 
 func toDate(t time.Time) string {
-	return t.In(time.Local).Format("2006-01-02")
+	return t.Format("2006-01-02")
 }
