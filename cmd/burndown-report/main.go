@@ -14,10 +14,10 @@ import (
 func main() {
 	var membersCSV string
 	var zenhubSprintUrl string
-	var chartFile string
-	flag.StringVar(&membersCSV, "members", "mkfsn,ionicc,pannpers,HowJMay", "for filtering the assignee of the issue")
+	var outputFile string
+	flag.StringVar(&membersCSV, "members", "", "for filtering the assignee of the issue")
 	flag.StringVar(&zenhubSprintUrl, "zenhub-sprint-url", "", "URL to zenhub sprint burndown report page")
-	flag.StringVar(&chartFile, "chart-file", "burndown-chart.html", "The HTML file to render the charts")
+	flag.StringVar(&outputFile, "output", "burndown-chart.html", "The HTML file to render the charts")
 	flag.Parse()
 
 	if zenhubSprintUrl == "" {
@@ -39,7 +39,12 @@ func main() {
 		return
 	}
 
-	c := zenhub.NewTeamSprint(strings.Split(membersCSV, ","), data[0].Data.Node)
+	var members []string
+	if membersCSV != "" {
+		members = strings.Split(membersCSV, ",")
+	}
+
+	c := zenhub.NewTeamSprint(members, data[0].Data.Node)
 
 	for user, issues := range c.UserBurndownIssues() {
 		fmt.Printf("%s\n", user)
@@ -52,7 +57,7 @@ func main() {
 		}
 	}
 
-	if err := c.DrawBurndownChart(chartFile); err != nil {
+	if err := c.DrawBurndownChart(outputFile); err != nil {
 		fmt.Printf("failed to draw burndown chart: %s\n", err)
 		return
 	}

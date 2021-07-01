@@ -3,4 +3,4 @@ burndown.html
 
 # binary
 burndown-report
-!cmd/
+!cmd/burndown-report/

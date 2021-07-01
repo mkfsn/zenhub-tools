@@ -23,7 +23,7 @@ func NewTeamSprint(members []string, sprint Sprint) TeamSprint {
 
 		assignee := issue.Issue.Assignees.Nodes[0].Login
 
-		if !isMember(members, assignee) {
+		if members != nil && !isMember(members, assignee) {
 			continue
 		}
 
