@@ -14,11 +14,9 @@ import (
 func main() {
 	var membersCSV string
 	var zenhubSprintUrl string
-	var profileDir string
 	var chartFile string
 	flag.StringVar(&membersCSV, "members", "mkfsn,ionicc,pannpers,HowJMay", "for filtering the assignee of the issue")
 	flag.StringVar(&zenhubSprintUrl, "zenhub-sprint-url", "", "URL to zenhub sprint burndown report page")
-	flag.StringVar(&profileDir, "profile-dir", "Profile 1", "The Chrome profile directory")
 	flag.StringVar(&chartFile, "chart-file", "burndown-chart.html", "The HTML file to render the charts")
 	flag.Parse()
 
@@ -29,7 +27,7 @@ func main() {
 		return
 	}
 
-	b, err := browser.GetRawSprintIssues(context.Background(), zenhubSprintUrl, profileDir)
+	b, err := browser.GetRawSprintIssues(context.Background(), zenhubSprintUrl)
 	if err != nil {
 		fmt.Printf("failed to get raw sprint issues: %s\n", err)
 		return

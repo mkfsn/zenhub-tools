@@ -3,8 +3,6 @@ package browser
 import (
 	"context"
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
@@ -12,28 +10,18 @@ import (
 )
 
 const (
-	bin      = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 	queryUrl = "https://api.zenhub.com/v1/graphql?query=getSprintIssues"
 )
 
-var (
-	homeDir, _  = os.UserHomeDir()
-	userDataDir = homeDir + "/Library/Application Support/Google/Chrome"
-)
-
-func GetRawSprintIssues(ctx context.Context, url string, profileDir string) ([]byte, error) {
-	l := launcher.New().
-		Headless(true).
-		Leakless(true).
-		UserDataDir(userDataDir).
-		ProfileDir(profileDir).
-		Bin(bin)
+func GetRawSprintIssues(ctx context.Context, url string) ([]byte, error) {
+	l := launcher.NewUserMode()
 
 	browser := rod.New().
-		Timeout(time.Second * 15).
 		ControlURL(l.MustLaunch()).
 		Trace(true).
 		MustConnect()
+
+	defer browser.MustClose()
 
 	dataCh := make(chan []byte)
 
@@ -58,8 +46,6 @@ func GetRawSprintIssues(ctx context.Context, url string, profileDir string) ([]b
 	}
 
 	page.MustNavigate(url)
-	wait := page.MustWaitRequestIdle()
-	wait()
 
 	select {
 	case <-ctx.Done():
